@@ -5,7 +5,7 @@ from flask import jsonify
 
 from config import Config
 from database import db
-from models.users import User
+from models.user_model import User
 from models.refresh_tokens import RefreshToken
 from schemas.user import UserRegisterSchema
 
