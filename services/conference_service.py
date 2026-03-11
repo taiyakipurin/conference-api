@@ -1,7 +1,7 @@
 from core.extensions import db
 from sqlalchemy import select
 
-from models.conference_model import Conference
+from models.conference import Conference
 from schemas.conference import ConferenceCreate
 
 class ConferenceService:
@@ -34,3 +34,14 @@ class ConferenceService:
         conference = db.session.execute(select(Conference).where(Conference.id == conference_id)).scalar_one_or_none()
 
         return conference if conference else None
+
+    @staticmethod
+    def delete_conference_by_id(conference_id: int) -> dict | None:
+        conference = db.session.execute(select(Conference).where(Conference.id == conference_id)).scalar_one_or_none()
+
+        if conference:
+            db.session.delete(conference)
+            db.session.commit()
+            return {"message": "conference has been deleted", "data": conference.to_dict()}
+        else:
+            return None

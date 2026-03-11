@@ -18,3 +18,12 @@ def get_user(user_id: int):
         return jsonify({"Error": f"User with id {user_id} not found"}), 404
 
     return jsonify(user.to_dict()), 200
+
+@user_bp.route('/users/<int:user_id>', methods=['DELETE'])
+def delete_user(user_id: int):
+    result = UserService.delete_user_by_id(user_id)
+
+    if result is None:
+        return jsonify({"Error": f"User with id {user_id} not found"}), 404
+
+    return jsonify(result), 200

@@ -34,3 +34,12 @@ def get_session(session_id: int):
         return jsonify({"error": f"Session with id {session_id} not found"}), 404
 
     return jsonify(session.to_dict()), 200
+
+@session_bp.route('/sessions/<int:session_id>', methods=['DELETE'])
+def delete_session(session_id: int):
+    result = SessionService.delete_session_by_id(session_id)
+
+    if result is None:
+        return jsonify({"error": f"Session with id {session_id} not found"}), 404
+
+    return jsonify(result)

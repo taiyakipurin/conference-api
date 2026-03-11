@@ -35,3 +35,14 @@ class SessionService:
         session = db.session.execute(select(Session).where(Session.id == session_id)).scalar_one_or_none()
 
         return session if session else None
+
+    @staticmethod
+    def delete_session_by_id(session_id: int) -> dict | None:
+        session = db.session.execute(select(Session).where(Session.id == session_id)).scalar_one_or_none()
+
+        if session:
+            db.session.delete(session)
+            db.session.commit()
+            return {"Message": "Session has been deleted", "data": session.to_dict()}
+        else:
+            return None

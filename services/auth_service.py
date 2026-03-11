@@ -6,7 +6,7 @@ from sqlalchemy import select
 from config.config import Config
 from core.extensions import db
 from models.user import User
-from models.refresh_tokens import RefreshToken
+from models.refresh_token import RefreshToken
 from schemas.user import UserRegisterSchema
 
 SECRET_KEY = Config.SECRET_KEY
@@ -28,26 +28,26 @@ def create_access_token(user_id: int, email: str) -> str:
     }
 
     return jwt.encode(payload, SECRET_KEY, algorithm="HS256")
-    
+
 def hash_token(token: str) -> str:
     return hashlib.sha256(token.encode()).hexdigest()
-    
-def create_refresh_token(user_id: int):
+
+def create_refresh_token(user_id: int) -> str:
     token = secrets.token_urlsafe(32)
     token_hash = hash_token(token)
-    
+
     refresh = RefreshToken(
         user_id=user_id,
         token_hash=token_hash,
         expires_at=datetime.utcnow() + timedelta(days=7)
     )
-    
+
     db.session.add(refresh)
     db.session.commit()
-    
+
     return token
-    
-def register_user(data: UserRegisterSchema):
+
+def register_user(data: UserRegisterSchema) -> dict:
     password_hash = hash_password(data.password)
 
     new_user = User(
@@ -56,8 +56,8 @@ def register_user(data: UserRegisterSchema):
         phone=data.phone,
         password_hash=password_hash
     )
-    
-    try: 
+
+    try:
         db.session.add(new_user)
         db.session.commit()
     except IntegrityError:
@@ -71,7 +71,7 @@ def register_user(data: UserRegisterSchema):
         "email": new_user.email
     }
 
-def login_user(email, password):
+def login_user(email, password) -> dict:
     # user = User.query.filter_by(email=email).first()
     user = db.session.execute(select(User).where(User.email == email)).scalar_one_or_none()
 
@@ -83,7 +83,7 @@ def login_user(email, password):
 
     access_token = create_access_token(user.id, user.email)
     refresh_token = create_refresh_token(user.id)
-    
+
     return {
         "access_token": access_token,
         "refresh_token": refresh_token

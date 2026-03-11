@@ -31,7 +31,7 @@ def login():
 
     try:
         result = login_user(
-            data["email"],
+            data["email"].lower(),
             data["password"]
         )
 

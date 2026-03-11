@@ -36,7 +36,16 @@ def get_conference(conference_id: int):
         return jsonify({"error": f"conference with id {conference_id} not found"}), 404
 
     return jsonify(conference.to_dict()), 200
-   
+
+@conf_bp.route('/conferences/<int:conference_id>', methods=['DELETE'])
+def delete_conference(conference_id: int):
+    result = ConferenceService.delete_conference_by_id(conference_id)
+
+    if result is None:
+        return jsonify({"error": f"conference with id {conference_id} not found"}), 404
+
+    return jsonify(result), 200
+
         
     
     

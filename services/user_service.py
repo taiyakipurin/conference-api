@@ -16,3 +16,14 @@ class UserService:
         user = db.session.execute(select(User).where(User.id == user_id)).scalar_one_or_none()
 
         return user if user else None
+
+    @staticmethod
+    def delete_user_by_id(user_id: int) -> dict | None:
+        user = db.session.execute(select(User).where(User.id == user_id)).scalar_one_or_none()
+
+        if user:
+            db.session.delete(user)
+            db.session.commit()
+            return {"Message": "User has been deleted", "data": user.to_dict()}
+        else:
+            return None
