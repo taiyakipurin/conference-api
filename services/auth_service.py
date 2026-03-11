@@ -1,11 +1,11 @@
 import bcrypt, jwt, secrets, hashlib
 from datetime import datetime, timedelta
 from sqlalchemy.exc import IntegrityError
-from flask import jsonify
+from sqlalchemy import select
 
-from config import Config
-from database import db
-from models.user_model import User
+from config.config import Config
+from core.extensions import db
+from models.user import User
 from models.refresh_tokens import RefreshToken
 from schemas.user import UserRegisterSchema
 
@@ -72,7 +72,8 @@ def register_user(data: UserRegisterSchema):
     }
 
 def login_user(email, password):
-    user = User.query.filter_by(email=email).first()
+    # user = User.query.filter_by(email=email).first()
+    user = db.session.execute(select(User).where(User.email == email)).scalar_one_or_none()
 
     if not user:
         raise Exception("User not found")

@@ -1,4 +1,5 @@
-from database import db
+from core.extensions import db
+from sqlalchemy import select
 
 from models.session import Session
 from schemas.session import SessionCreate
@@ -21,6 +22,16 @@ class SessionService:
         except Exception as e:
             raise Exception(e)
 
-        # return {"data": new_session.to_dict()}
         return {"message": "new session has been added", "data": new_session.to_dict()}
-        
+
+    @staticmethod
+    def get_all() -> list[Session]:
+        sessions = db.session.execute(select(Session)).scalars().all()
+
+        return [session.to_dict() for session in sessions]
+
+    @staticmethod
+    def get_session_by_id(session_id: int) -> Session | None:
+        session = db.session.execute(select(Session).where(Session.id == session_id)).scalar_one_or_none()
+
+        return session if session else None

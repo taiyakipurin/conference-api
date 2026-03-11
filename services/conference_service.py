@@ -1,7 +1,8 @@
-from database import db
+from core.extensions import db
+from sqlalchemy import select
 
 from models.conference_model import Conference
-from schemas.conference_schema import ConferenceCreate
+from schemas.conference import ConferenceCreate
 
 class ConferenceService:
     @staticmethod
@@ -23,5 +24,13 @@ class ConferenceService:
         return {"message": "conference has been created", "data": new_conference.to_dict()}
         
     @staticmethod
-    def get_conferences():
-        return Conference.query.all()
+    def get_all() -> list[Conference]:
+        conferences = db.session.execute(select(Conference)).scalars().all()
+
+        return [conference.to_dict() for conference in conferences]
+
+    @staticmethod
+    def get_conference_by_id(conference_id: int) -> Conference | None:
+        conference = db.session.execute(select(Conference).where(Conference.id == conference_id)).scalar_one_or_none()
+
+        return conference if conference else None

@@ -1,4 +1,4 @@
-from database import db
+from core.extensions import db
 
 class Session(db.Model):
     __tablename__ = 'sessions'

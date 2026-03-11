@@ -18,4 +18,19 @@ def add_session():
     except Exception as e:
         return jsonify ({"error": str(e)}), 400
     
-    return jsonify(session), 201
+    return jsonify(session), 200
+
+@session_bp.route('/sessions', methods=['GET'])
+def list_sessions():
+    sessions = SessionService.get_all()
+
+    return jsonify({"sessions": sessions}), 200
+
+@session_bp.route('/sessions/<int:session_id>', methods=['GET'])
+def get_session(session_id: int):
+    session = SessionService.get_session_by_id(session_id)
+
+    if session is None:
+        return jsonify({"error": f"Session with id {session_id} not found"}), 404
+
+    return jsonify(session.to_dict()), 200

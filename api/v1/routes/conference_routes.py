@@ -2,15 +2,15 @@ from flask import Blueprint, request, jsonify
 from pydantic import ValidationError
 
 from services.conference_service import ConferenceService
-from schemas.conference_schema import ConferenceCreate
+from schemas.conference import ConferenceCreate
 
 conf_bp = Blueprint('conferences', __name__)
 
-# @conf_bp.route('/conferences', methods=['GET'])
-# def show_conferences():
-    # conferences = ConferenceService.get_conferences()
+@conf_bp.route('/conferences', methods=['GET'])
+def list_conferences():
+    conferences = ConferenceService.get_all()
 
-    # return jsonify({"code": conferences})
+    return jsonify({"conferences": conferences}), 201
 
 @conf_bp.route('/conferences', methods=['POST'])
 def create_conference():
@@ -27,6 +27,15 @@ def create_conference():
         return jsonify({"Error": "Incorrect data"}), 400
     except Exception as e:
         return jsonify({"error": str(e)}), 400
+
+@conf_bp.route('/conferences/<int:conference_id>', methods=['GET'])
+def get_conference(conference_id: int):
+    conference = ConferenceService.get_conference_by_id(conference_id)
+
+    if conference is None:
+        return jsonify({"error": f"conference with id {conference_id} not found"}), 404
+
+    return jsonify(conference.to_dict()), 200
    
         
     

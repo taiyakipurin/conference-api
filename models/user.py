@@ -1,4 +1,4 @@
-from database import db
+from core.extensions import db
 from datetime import datetime
 
 class User(db.Model):
