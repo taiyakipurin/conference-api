@@ -1,28 +1,20 @@
 from core.extensions import db
 from sqlalchemy import select
+from flask import abort
 
 from models.session import Session
 from schemas.session import SessionCreate
 
 class SessionService:
     @staticmethod
-    def create_session(data: SessionCreate):
-        new_session = Session(
-            # conference_id=data.conference_id,
-            title=data.title,
-            description=data.description,
-            speaker=data.speaker,
-            start_time=data.start_time,
-            end_time=data.end_time
-        )
-        
-        try:
-            db.session.add(new_session)
-            db.session.commit()
-        except Exception as e:
-            raise Exception(e)
+    def create_session(data: dict) -> dict:
+        session_data = SessionCreate(**data)
+        session = Session(**session_data.model_dump())
 
-        return {"message": "new session has been added", "data": new_session.to_dict()}
+        db.session.add(session)
+        db.session.commit()
+
+        return {"message": "new session has been added", "data": session.to_dict()}
 
     @staticmethod
     def get_all() -> list[Session]:
@@ -31,18 +23,22 @@ class SessionService:
         return [session.to_dict() for session in sessions]
 
     @staticmethod
-    def get_session_by_id(session_id: int) -> Session | None:
+    def get_session_by_id(session_id: int) -> Session:
         session = db.session.execute(select(Session).where(Session.id == session_id)).scalar_one_or_none()
 
-        return session if session else None
+        if session is None:
+            abort(404, description="session does not exist")
+
+        return session
 
     @staticmethod
-    def delete_session_by_id(session_id: int) -> dict | None:
+    def delete_session_by_id(session_id: int) -> dict:
         session = db.session.execute(select(Session).where(Session.id == session_id)).scalar_one_or_none()
 
-        if session:
-            db.session.delete(session)
-            db.session.commit()
-            return {"Message": "Session has been deleted", "data": session.to_dict()}
-        else:
-            return None
+        if session is None:
+            abort(404, description="session does not exist")
+
+        db.session.delete(session)
+        db.session.commit()
+
+        return {"Message": "Session has been deleted", "data": session.to_dict()}

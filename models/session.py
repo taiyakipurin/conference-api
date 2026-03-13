@@ -9,8 +9,8 @@ class Session(db.Model):
     title = db.Column(db.String(200), nullable=False)
     description = db.Column(db.Text)
     speaker = db.Column(db.String(50))
-    start_time = db.Column(db.DateTime)
-    end_time = db.Column(db.DateTime)
+    start_date = db.Column(db.DateTime)
+    end_date = db.Column(db.DateTime)
     
     def to_dict(self):
         return {
@@ -19,6 +19,6 @@ class Session(db.Model):
             "title": self.title,
             "description": self.description,
             "speaker": self.speaker,
-            "start_time": self.start_time.isoformat() if self.start_time else None,
-            "end_time": self.end_time.isoformat() if self.end_time else None
+            "start_date": self.start_date.isoformat() if self.start_date else None,
+            "end_date": self.end_date.isoformat() if self.end_date else None
         }

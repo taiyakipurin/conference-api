@@ -1,5 +1,6 @@
 from core.extensions import db
 from sqlalchemy import select
+from flask import abort
 
 from models.user import User
 
@@ -12,18 +13,22 @@ class UserService:
         return [user.to_dict() for user in users]
 
     @staticmethod
-    def get_user_by_id(user_id: int) -> User | None:
+    def get_user_by_id(user_id: int) -> User:
         user = db.session.execute(select(User).where(User.id == user_id)).scalar_one_or_none()
 
-        return user if user else None
+        if user is None:
+            abort(404, description="user does not exist")
+
+        return user
 
     @staticmethod
-    def delete_user_by_id(user_id: int) -> dict | None:
+    def delete_user_by_id(user_id: int) -> dict:
         user = db.session.execute(select(User).where(User.id == user_id)).scalar_one_or_none()
 
-        if user:
-            db.session.delete(user)
-            db.session.commit()
-            return {"Message": "User has been deleted", "data": user.to_dict()}
-        else:
-            return None
+        if user is None:
+            abort(404, "user does not exist")
+
+        db.session.delete(user)
+        db.session.commit()
+
+        return {"message": "user has been deleted", "data": user.to_dict()}

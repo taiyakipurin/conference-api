@@ -1,27 +1,22 @@
 from core.extensions import db
 from sqlalchemy import select
+from pydantic import ValidationError
+from flask import abort
 
 from models.conference import Conference
 from schemas.conference import ConferenceCreate
 
 class ConferenceService:
     @staticmethod
-    def create_conference(data: ConferenceCreate):
-        new_conference = Conference(
-            title=data.title,
-            description=data.description,
-            location=data.location,
-            start_date=data.start_date,
-            end_date=data.end_date
-        )
+    def create_conference(data: dict) -> Conference:
+        conf_data = ConferenceCreate(**data)
+
+        conference = Conference(**conf_data.model_dump())
+
+        db.session.add(conference)
+        db.session.commit()
         
-        try:
-            db.session.add(new_conference)
-            db.session.commit()
-        except Exception as e:
-            raise Exception(e)
-        
-        return {"message": "conference has been created", "data": new_conference.to_dict()}
+        return conference
         
     @staticmethod
     def get_all() -> list[Conference]:
@@ -30,18 +25,22 @@ class ConferenceService:
         return [conference.to_dict() for conference in conferences]
 
     @staticmethod
-    def get_conference_by_id(conference_id: int) -> Conference | None:
+    def get_conference_by_id(conference_id: int) -> Conference:
         conference = db.session.execute(select(Conference).where(Conference.id == conference_id)).scalar_one_or_none()
 
-        return conference if conference else None
+        if conference is None:
+            abort(404, description=f"conference {conference_id} does not exist")
+
+        return conference
 
     @staticmethod
-    def delete_conference_by_id(conference_id: int) -> dict | None:
+    def delete_conference_by_id(conference_id: int) -> dict:
         conference = db.session.execute(select(Conference).where(Conference.id == conference_id)).scalar_one_or_none()
 
-        if conference:
-            db.session.delete(conference)
-            db.session.commit()
-            return {"message": "conference has been deleted", "data": conference.to_dict()}
-        else:
-            return None
+        if conference is None:
+            abort(404, description=f"conference {conference_id} does not exist")
+
+        db.session.delete(conference)
+        db.session.commit()
+
+        return {"message": f"conference {conference_id} has been deleted", "data": conference.to_dict()}
