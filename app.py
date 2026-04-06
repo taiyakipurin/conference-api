@@ -1,7 +1,8 @@
-from flask import Flask, Blueprint
+from flask import Flask, Blueprint, request
 import os
 
 from core.extensions import db
+from core.logger import setup_logger
 from config.config import Config
 from errors.handlers import register_error_handlers
 
@@ -13,6 +14,7 @@ from api.v1.routes.registration_routes import register_bp
 
 def create_app() -> Flask:
     app = Flask(__name__)
+    setup_logger(app)
     app.config.from_object(Config)
     register_error_handlers(app)
 
@@ -26,6 +28,10 @@ def create_app() -> Flask:
             os.mkdir(db_dir)
 
         db.create_all()
+
+    @app.before_request
+    def log_request():
+        app.logger.info(f"{request.method} {request.path}")
 
     api_v1_bp = Blueprint('api_v1', __name__, url_prefix='/api/v1')
 

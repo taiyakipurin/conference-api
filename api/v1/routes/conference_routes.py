@@ -37,7 +37,19 @@ def delete_conference(conference_id: int):
 
     return jsonify(result), 200
 
-        
-    
-    
-    
+@conf_bp.route('/conferences/<int:conference_id>', methods=['PUT'])
+def update_conference(conference_id: int):
+    data = request.get_json()
+
+    if not data:
+        abort(400, description="JSON body required")
+
+    try:
+        updated_conference = ConferenceService.update_conference(conference_id, data)
+
+        if not updated_conference:
+            abort(404, description="Conference not found")
+
+        return jsonify({"success": updated_conference.to_dict()}), 200
+    except ValidationError as e:
+        abort(400, description=e.errors())

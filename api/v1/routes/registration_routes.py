@@ -34,3 +34,19 @@ def delete_registration(registration_id: int):
 
     return jsonify(result), 200
 
+@register_bp.route('/registrations/<int:registration_id>', methods=['PUT'])
+def update_conference(registration_id: int):
+    data = request.get_json()
+
+    if not data:
+        abort(400, description="JSON body required")
+    try:
+        updated_registration = RegistrationService.update_registration(registration_id, data)
+
+        if not updated_registration:
+            abort(404, description="Registration not found")
+
+        return jsonify({"success": updated_registration.to_dict()}), 200
+    except Exception as e:
+        abort(400, description=e.errors())
+

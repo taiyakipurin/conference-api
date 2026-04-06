@@ -12,8 +12,6 @@ class Conference(db.Model):
     start_date = db.Column(db.DateTime)
     end_date = db.Column(db.DateTime)
     created_at = db.Column(db.DateTime, default=datetime.utcnow)
-
-
     
     def to_dict(self):
         return {

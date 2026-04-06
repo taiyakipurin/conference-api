@@ -32,3 +32,19 @@ def delete_session(session_id: int):
     result = SessionService.delete_session_by_id(session_id)
 
     return jsonify(result)
+
+@session_bp.route('/sessions/<int:session_id>', methods=['PUT'])
+def update_conference(session_id: int):
+    data = request.get_json()
+
+    if not data:
+        abort(400, description="JSON body required")
+    try:
+        updated_session = SessionService.update_session(session_id, data)
+
+        if not updated_session:
+            abort(404, description="Registration not found")
+
+        return jsonify({"success": updated_session.to_dict()}), 200
+    except Exception as e:
+        abort(400, description=e.errors())
