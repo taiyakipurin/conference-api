@@ -1,4 +1,4 @@
-from flask import Blueprint, jsonify
+from flask import Blueprint, jsonify, request, abort
 
 from services.user_service import UserService
 
@@ -21,3 +21,19 @@ def delete_user(user_id: int):
     result = UserService.delete_user_by_id(user_id)
 
     return jsonify(result), 200
+
+@user_bp.route('/users/<int:users_id>', methods=['PUT'])
+def update_conference(users_id: int):
+    data = request.get_json()
+
+    if not data:
+        abort(400, description="JSON body required")
+    try:
+        updated_user = UserService.update_user(users_id, data)
+
+        if not updated_user:
+            abort(404, description="User not found")
+
+        return jsonify({"success": updated_user.to_dict()}), 200
+    except Exception as e:
+        abort(400, description=e.errors())
